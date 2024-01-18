@@ -35,8 +35,8 @@ class MyStack(cdk.Stack):
         )
         all_tasks_done_tracker.add_to_role_policy(
             cdk.aws_iam.PolicyStatement(
-                actions=['s3:PutObject', 's3:GetObject'],
-                resources=[tracker_bucket.bucket_arn + '/*']
+                actions=['s3:PutObject', 's3:GetObject', 's3:ListBucket'],
+                resources=[tracker_bucket.bucket_arn, f'{tracker_bucket.bucket_arn}/*']
             )
         )
         all_tasks_done_tracker.add_to_role_policy(
