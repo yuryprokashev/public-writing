@@ -1,7 +1,7 @@
 # Serverless Promise.all() implementation using AWS services
 ## Requirements
 - Python 3.12
-- CDK 2.110 or higher
+- CDK 2.110 or higher (see [Getting Started with CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html))
 - S3 bucket to store the tracker files (see `trackerBucketName` below)
 
 ## Usage
@@ -27,3 +27,4 @@
 - each successful task-worker lambda execution creates the SQS message in SQS task-done-queue.
 - task-tracker lambda listens task-done-queue and keeps track of the tasks that are completed.
 - once all the tasks are completed, task-tracker lambda sends SQS all-tasks-done-queue.
+- tracker files will be stored under `task-done-tracker` folder in the S3 bucket you specified during deployment.
