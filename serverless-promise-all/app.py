@@ -28,6 +28,7 @@ class MyStack(cdk.Stack):
             timeout=lambda_timeout,
             memory_size=256,
             architecture=cdk.aws_lambda.Architecture.ARM_64,
+            reserved_concurrent_executions=1,
             environment={
                 'TRACKER_BUCKET_NAME': tracker_bucket_name,
                 'ALL_TASKS_DONE_QUEUE_URL': all_tasks_done_queue.queue_url
