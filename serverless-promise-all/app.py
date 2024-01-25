@@ -16,9 +16,29 @@ class MyStack(cdk.Stack):
         lambda_timeout = cdk.Duration.seconds(60)
         queue_visibility_timeout = cdk.Duration.seconds(90)
 
-        task_done_queue = cdk.aws_sqs.Queue(self, 'task-done-queue', visibility_timeout=queue_visibility_timeout)
+        dead_task_done_queue = cdk.aws_sqs.Queue(
+            self, 'dead-task-done-queue'
+        )
 
-        all_tasks_done_queue = cdk.aws_sqs.Queue(self, 'all-tasks-done-queue', visibility_timeout=queue_visibility_timeout)
+        task_done_queue = cdk.aws_sqs.Queue(
+            self, 'task-done-queue',
+            visibility_timeout=queue_visibility_timeout,
+            dead_letter_queue=cdk.aws_sqs.DeadLetterQueue(
+                queue=dead_task_done_queue,
+                max_receive_count=3
+            )
+        )
+        dead_all_tasks_done_queue = cdk.aws_sqs.Queue(
+            self, 'dead-all-tasks-done-queue'
+        )
+        all_tasks_done_queue = cdk.aws_sqs.Queue(
+            self, 'all-tasks-done-queue',
+            visibility_timeout=queue_visibility_timeout,
+            dead_letter_queue=cdk.aws_sqs.DeadLetterQueue(
+                queue=dead_all_tasks_done_queue,
+                max_receive_count=3
+            )
+        )
 
         all_tasks_done_tracker = cdk.aws_lambda.Function(
             self, 'allTasksDoneTracker',
