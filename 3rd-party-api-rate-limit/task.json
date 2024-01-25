@@ -1,0 +1,12 @@
+{
+  "rateLimit": 100,
+  "delaySeconds": 60,
+  "items": [
+    {
+        "item_id": "b5db5337-78ca-464e-874f-ed35457dad63"
+    },
+    {
+        "item_id": "079be918-d066-488b-af58-40ed17cd917a"
+    }
+  ]
+}
