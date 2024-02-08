@@ -27,7 +27,7 @@ In AWS Console go to Athena service
 * Enter the Data source name.
 
 > Note: the field tip is confusing.
-> At the end, your datasource will contain all DynamoDB tables in the region, so choose wisely.
+> At the end, your data source will contain all DynamoDB tables in the region, so choose wisely.
 > I ended up with `DynamoDBCatalog`.
 
 ![](https://ik.imagekit.io/wp8orxehk/differ/community/yury-prokashev-edufun-me/query_dynamo_data_with_athena._03_BpEHtmyx8.png "Configure Data source properties")
@@ -55,7 +55,7 @@ After your connector lambda is created,
   Click `Review and create`.
   ![](https://ik.imagekit.io/wp8orxehk/differ/community/yury-prokashev-edufun-me/query_dynamo_data_with_athena._06_FqeIA4hRE.png "Review and create")
 
-### Querying the data
+## Querying the data
 
 Now let's query our DynamoDB table using Athena SQL.
 
