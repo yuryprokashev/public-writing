@@ -1,0 +1,5 @@
+urllib3==1.26.15
+numpy==1.23.5
+jsonschema==4.17.3
+TA-Lib==0.4.28
+yfinance==0.2.31
