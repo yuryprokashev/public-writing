@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div>
+      <h1>AppSync realtime demo</h1>
+      <h3>Start Async Process</h3>
+      <label for="processIdInput">Process ID:</label>
+      <input type="text" id="processIdInput" name="processIdInput">
+      <button id="startProcessButton">Start Process</button>
+      <h3>Async Process Status</h3>
+      <div id="messages"></div>
+    </div>
+    <script>{{SCRIPT_DIST}}</script>
+    <script>
+        const app = new App('processIdInput', 'messages', 'startProcessButton');
+    </script>
+</body>
+</html>

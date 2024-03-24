@@ -1,0 +1,29 @@
+schema {
+    mutation: Mutation
+    query: Query
+    subscription: Subscription
+}
+
+type Mutation {
+    startProcess(process_id: String!): AsyncProcess!
+    endProcess(process_id: String!): AsyncProcess!
+}
+type Query {
+    getProcess(process_id: String!): AsyncProcess
+}
+
+type Subscription {
+    onProcessDone(id: String!): AsyncProcess
+        @aws_subscribe(mutations: ["endProcess"])
+}
+
+type AsyncProcess {
+    id: String!
+    status: AsyncProcessStatus!
+}
+
+enum AsyncProcessStatus {
+    PENDING
+    DONE
+    ERROR
+}
