@@ -5,13 +5,16 @@ schema {
 
 type Mutation {
     startProcess(process_id: String!): AsyncProcess!
+    @aws_cognito_user_pools(cognito_groups: ["Admin"])
+    startProcessLambda(process_id: String!): AsyncProcess!
+    @aws_lambda
 }
 type Query {
     getProcess(process_id: String!): AsyncProcess
 }
 
 
-type AsyncProcess {
+type AsyncProcess @aws_lambda @aws_cognito_user_pools(cognito_groups: ["Admin"]) {
     id: String!
     status: AsyncProcessStatus!
 }

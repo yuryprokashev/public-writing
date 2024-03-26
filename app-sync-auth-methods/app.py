@@ -39,7 +39,28 @@ class MyStack(cdk.Stack):
         return function_url, web_site_server
 
     def process_api(self, user_pool) -> cdk.aws_appsync.GraphqlApi:
-
+        authorizer = cdk.aws_lambda.Function(
+            self, 'authorizer',
+            runtime=cdk.aws_lambda.Runtime.PYTHON_3_11,
+            handler='authorizer.main',
+            code=cdk.aws_lambda.Code.from_asset(
+                path='./src',
+                exclude=['*', '!authorizer.py']
+            ),
+            architecture=cdk.aws_lambda.Architecture.ARM_64
+        )
+        lambda_auth_mode = cdk.aws_appsync.AuthorizationMode(
+            authorization_type=cdk.aws_appsync.AuthorizationType.LAMBDA,
+            lambda_authorizer_config=cdk.aws_appsync.LambdaAuthorizerConfig(
+                handler=authorizer
+            )
+        )
+        user_pool_auth_mode = cdk.aws_appsync.AuthorizationMode(
+            authorization_type=cdk.aws_appsync.AuthorizationType.USER_POOL,
+            user_pool_config=cdk.aws_appsync.UserPoolConfig(
+                user_pool=user_pool
+            )
+        )
         graphql_api = cdk.aws_appsync.GraphqlApi(
             self, 'process-api',
             name='experiment-appsync-api-with-lambda-authorizer',
@@ -47,12 +68,8 @@ class MyStack(cdk.Stack):
                 file_path='./schema.graphql'
             ),
             authorization_config=cdk.aws_appsync.AuthorizationConfig(
-                default_authorization=cdk.aws_appsync.AuthorizationMode(
-                    authorization_type=cdk.aws_appsync.AuthorizationType.USER_POOL,
-                    user_pool_config=cdk.aws_appsync.UserPoolConfig(
-                        user_pool=user_pool
-                    )
-                ),
+                default_authorization=user_pool_auth_mode,
+                additional_authorization_modes=[lambda_auth_mode]
             )
         )
 
@@ -78,25 +95,29 @@ class MyStack(cdk.Stack):
             type_name='Mutation',
             field_name='startProcess'
         )
-        start_process_lambda.add_to_role_policy(
-            statement=cdk.aws_iam.PolicyStatement(
-                actions=['events:PutEvents'],
-                resources=['*']
-            )
+        start_process_lambda_lambda = cdk.aws_lambda.Function(
+            self, 'start-process-lambda-lambda',
+            runtime=cdk.aws_lambda.Runtime.PYTHON_3_11,
+            handler='api.start_process_lambda',
+            code=cdk.aws_lambda.Code.from_asset(
+                path='./src',
+                exclude=['*', '!api.py']
+            ),
+            architecture=cdk.aws_lambda.Architecture.ARM_64
+        )
+        start_process_lambda_datasource = graphql_api.add_lambda_data_source(
+            'start-process-lambda-datasource',
+            lambda_function=start_process_lambda_lambda
+        )
+        start_process_lambda_datasource.create_resolver(
+            id='start-process-lambda-resolver',
+            type_name='Mutation',
+            field_name='startProcessLambda'
         )
         return graphql_api
 
     def user_pool(self) -> tuple[cdk.aws_cognito.UserPool, cdk.aws_cognito.UserPoolClient]:
-        authorizer = cdk.aws_lambda.Function(
-            self, 'authorizer',
-            runtime=cdk.aws_lambda.Runtime.PYTHON_3_11,
-            handler='authorizer.main',
-            code=cdk.aws_lambda.Code.from_asset(
-                path='./src',
-                exclude=['*', '!authorizer.py']
-            ),
-            architecture=cdk.aws_lambda.Architecture.ARM_64
-        )
+
         user_pool = cdk.aws_cognito.UserPool(
             self, 'user-pool',
             user_pool_name='experiment-app-sync-user-pool',
@@ -130,10 +151,6 @@ class MyStack(cdk.Stack):
                 user_srp=True
             ),
             refresh_token_validity=cdk.Duration.days(30),
-        )
-        user_pool.add_trigger(
-            operation=cdk.aws_cognito.UserPoolOperation.PRE_AUTHENTICATION,
-            fn=authorizer
         )
         return user_pool, user_pool_client
 

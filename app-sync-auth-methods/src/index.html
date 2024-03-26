@@ -20,7 +20,8 @@
         <h3>Start Async Process</h3>
         <label for="processIdInput">Process ID:</label>
         <input type="text" id="processIdInput" name="processIdInput">
-        <button id="startProcessButton">Start Process</button>
+        <button id="startProcessCognitoButton">Start Process Cognito</button>
+        <button id="startProcessLambdaButton">Start Process Lambda</button>
         <h3>Async Process Status</h3>
         <div id="messages"></div>
     </div>
@@ -32,7 +33,8 @@
             'signOutButtonId': 'signOutButton',
             'processInputId': 'processIdInput',
             'messagesId': 'messages',
-            'startProcessButtonId': 'startProcessButton',
+            'startCognitoProcessButtonId': 'startProcessCognitoButton',
+            'startLambdaProcessButtonId': 'startProcessLambdaButton',
             'usernameInputId': 'usernameInput',
             'passwordInputId': 'passwordInput',
         }

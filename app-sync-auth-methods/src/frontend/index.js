@@ -1,8 +1,19 @@
 import { Amplify } from 'aws-amplify';
 import config from './aws-exports.js';
 import {generateClient} from 'aws-amplify/api';
-import {startProcess} from "./src/graphql/mutations.js";
+import {startProcess, startProcessLambda} from "./src/graphql/mutations.js";
 import {signIn, signOut, getCurrentUser, fetchUserAttributes} from 'aws-amplify/auth';
+const getRequestHeaders = async () => {
+    const userAttributes = await fetchUserAttributes()
+    return {
+      'x-usage-plan-id': userAttributes['custom:usage_plan']
+    }
+}
+
+const getLambdaAuthToken = async() => {
+  const user = await getCurrentUser()
+  return `user_id=${user.username}`
+}
 
 
 
@@ -10,7 +21,8 @@ class App {
   constructor({
                 processInputId,
                 messagesId,
-                startProcessButtonId,
+                startCognitoProcessButtonId,
+                startLambdaProcessButtonId,
                 signInButtonId,
                 signOutButtonId,
                 usernameInputId,
@@ -21,20 +33,36 @@ class App {
     this.signOutButton = document.getElementById(signOutButtonId);
     this.processIdInputField = document.getElementById(processInputId);
     this.messagesDiv = document.getElementById(messagesId);
-    this.startButton = document.getElementById(startProcessButtonId);
+    this.startButtonCognito = document.getElementById(startCognitoProcessButtonId);
+    this.startButtonLambda = document.getElementById(startLambdaProcessButtonId);
     this.usernameInputField = document.getElementById(usernameInputId);
     this.passwordInputField = document.getElementById(passwordInputId);
-    this.initProcessButton()
-    this.initSignInButton()
-    this.initSignOutButton()
-    Amplify.configure(config);
-    this.client = generateClient();
+    this.initStartProcessCognitoButton();
+    this.initStartProcessLambdaButton();
+    this.initSignInButton();
+    this.initSignOutButton();
+    Amplify.configure(config, {
+      API: {
+        GraphQL: {
+          headers: getRequestHeaders
+        }
+      }
+    });
+    this.cognitoClient = generateClient();
+    this.lambdaClient = generateClient({authMode: 'lambda'})
   }
-  initProcessButton() {
-    this.startButton.onclick = async () => {
+  initStartProcessCognitoButton() {
+    this.startButtonCognito.onclick = async () => {
       const processId = this.processIdInputField.value;
       console.log('Starting process:', processId);
-      await this.startProcess(processId);
+      await this.startProcess(processId, this.startProcessCognito.bind(this));
+    }
+  }
+  initStartProcessLambdaButton() {
+    this.startButtonLambda.onclick = async () => {
+        const processId = this.processIdInputField.value;
+        console.log('Starting process:', processId);
+        await this.startProcess(processId, this.startProcessLambda.bind(this));
     }
   }
   initSignInButton() {
@@ -65,20 +93,33 @@ class App {
     }
   }
 
-  async startProcess(processId) {
+  async startProcess(processId, fetcher) {
     try {
-      const startProcessResult = await this.client.graphql({
-        query: startProcess,
-        variables: {
-          process_id: processId
-        }
-      })
+      const startProcessResult = await fetcher(processId);
       this.messagesDiv.innerHTML += `<div>Process started: ${processId}</div>`;
       this.messagesDiv.innerHTML += `<div>${JSON.stringify(startProcessResult.data)}</div>`
       console.log('Process started:', startProcessResult);
     } catch (error) {
       console.error('Error starting process:', error);
     }
+  }
+  async startProcessCognito(processId) {
+    return this.cognitoClient.graphql({
+        query: startProcess,
+        variables: {
+          process_id: processId
+        }
+      })
+  }
+  async startProcessLambda(processId) {
+    const token = await getLambdaAuthToken()
+    return this.lambdaClient.graphql({
+        query: startProcessLambda,
+        variables: {
+          process_id: processId
+        },
+        authToken: token
+      })
   }
 }
 window.App = App;
