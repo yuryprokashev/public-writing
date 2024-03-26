@@ -1,0 +1,23 @@
+schema {
+    mutation: Mutation
+    query: Query
+}
+
+type Mutation {
+    startProcess(process_id: String!): AsyncProcess!
+}
+type Query {
+    getProcess(process_id: String!): AsyncProcess
+}
+
+
+type AsyncProcess {
+    id: String!
+    status: AsyncProcessStatus!
+}
+
+enum AsyncProcessStatus {
+    PENDING
+    DONE
+    ERROR
+}
