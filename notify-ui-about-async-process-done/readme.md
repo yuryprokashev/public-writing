@@ -9,6 +9,7 @@
 - Create a virtual environment: `python -m venv .venv`
 - Activate the virtual environment: `source .venv/bin/activate`
 - Install dependencies: `pip install -r requirements.txt`
+- Install frontend dependencies: `npm --prefix ./src/frontend install`
 - Deploy the stack: `npm --prefix ./src/frontend run build && cdk deploy`
 - Open the `WebSiteUrl` stack output in your browser
 - Fill in the Process ID and click the "Start Process" button
